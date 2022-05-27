@@ -7,7 +7,9 @@ from bs4 import BeautifulSoup
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-nltk.download()
+from flask import Flask
+from flask import jsonify
+app = Flask(__name__)
 
 class GoogleCrawler():
     
@@ -37,7 +39,8 @@ class GoogleCrawler():
                           'http://webcache.googleusercontent.', 
                           'https://policies.google.',
                           'https://support.google.',
-                          'https://maps.google.')
+                          'https://maps.google.',
+                          'https://taipeitimes.com')
 
         for url in links[:]:
             if url.startswith(google_domains):
@@ -51,9 +54,9 @@ class GoogleCrawler():
 #     qdr:m (past month)
 #     qdr:y (past year)
     def google_search(self,query,timeline='',page='0'):
-        url = self.url + query + '&tbs={timeline}&start={page}'.format(timeline=timeline,page=page)
+        url = self.url + query + '&tbs={timeline}&start={page}&filter=0&lr=lang_en'.format(timeline=timeline,page=page)
         print('[Check][URL] URL : {url}'.format(url=url))
-        response = self.get_source(self.url + query)
+        response = self.get_source(url)
         return self.parse_googleResults(response)
     # Google Search Result Parsing
     def parse_googleResults(self,response):
@@ -101,31 +104,63 @@ class GoogleCrawler():
         data_array = []
         for i in whitelist:
             json_data = {
-                'Date' : 'Week1',
+                'Date' : 'Hour1',
                 'Company' : i , 
-                'Count' : dict_data[i]
+                'Count' : 0
             }
             data_array.append(json_data)
         return data_array
+    def get_wordcount(self,whitelist , dict_data):
+        for i in whitelist:
+            if (i in dict_data):
+                return dict_data[i]
+        return 0
     def jsonarray_toexcel(self,data_array):
         df = pd.DataFrame(data=data_array)
         df.to_excel('result.xlsx' , index=False)
         return
-    
-if __name__ == "__main__":
-    query = "TSMC ASML"
+@app.route("/")
+def Hello():
+    return "Hellow World"
+
+@app.route('/google_search/<company>')
+def google_search(company):
     crawler = GoogleCrawler()
-    results = crawler.google_search(query , 'qdr:w' , '10')
-    print(results[:3])
-    Target_URL = 'https://taipeitimes.com/News/biz/archives/2022/01/20/2003771688'
-    response = crawler.get_source(Target_URL)
-    soup = crawler.html_parser(response.text)
-    orignal_text = crawler.html_getText(soup)
-    print(orignal_text[:100])
-    result_wordcount = crawler.word_count(orignal_text)
-    result_wordcount
-    whitelist = ['ASML' , 'Intel']
-    end_result = crawler.get_wordcount_json(whitelist , result_wordcount)
-    print(end_result)
-    crawler.jsonarray_toexcel(end_result)
-    print('Excel is OK')
+    query = '\"{company}\"'.format(company=company)
+    results = crawler.google_search(query , 'qdr:h' , '1')
+    print(results)
+    arr = []
+    with open('{company}.txt'.format(company=company),"w") as f:
+        for i in results:
+            arr.append(i['link'])
+            f.write(i['link']+'\n')
+        f.close()
+    return jsonify(arr)
+
+@app.route("/query/<company>")
+def query(company):
+    result_wordcount = dict()
+    crawler = GoogleCrawler()
+    whitelist = [str(company)]
+    end_result = crawler.get_wordcount_json(whitelist , [])
+    try:
+        with open('{company}.txt'.format(company=company),"r") as f:
+            Target_URL = f.readline()
+            while Target_URL != '':
+                print(Target_URL.split('\n')[0])
+                response = crawler.get_source(Target_URL.split('\n')[0])
+                soup = crawler.html_parser(response.text)
+                orignal_text = crawler.html_getText(soup)
+                result_wordcount = crawler.word_count(orignal_text)
+                count = crawler.get_wordcount(whitelist , result_wordcount)
+                end_result[0]['Count'] = end_result[0]['Count'] + count
+                Target_URL = f.readline()
+            crawler.jsonarray_toexcel(end_result)
+            f.close()
+            return str(end_result)
+    except:
+        return 'Has no {company}.txt before'.format(company=company)
+
+if __name__ == "__main__":
+    print("app running")
+    app.run(debug=True, host='0.0.0.0', port=8080)

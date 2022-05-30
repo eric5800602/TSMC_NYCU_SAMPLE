@@ -45,15 +45,15 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: import nltk
+      - name: Import nltk
         run: |
-          python -c "import nltk;nltk.download('corpus')"
-          python -c "import nltk;nltk.download('tokenize')"
-          python -c "import nltk;nltk.download('stopwords')"
-          python -c "import nltk;nltk.download('word_tokenize')"
-          python -c "import nltk;nltk.download('punkt')"
+          python -c "import nltk;nltk.download('all')"
+      # python -c "import nltk;nltk.download('tokenize')"
+      # python -c "import nltk;nltk.download('stopwords')"
+      # python -c "import nltk;nltk.download('word_tokenize')"
+      # python -c "import nltk;nltk.download('punkt')"
       # Runs a single command using the runners shell
-      - name: Run a one-line script
+      - name: Run pytest
         run: |
           python -m pytest . tests --doctest-modules --junitxml=test-results.xml --cov-config=.coveragerc --cov=. --cov-report=html
       - name: Upload artifact

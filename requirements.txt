@@ -5,3 +5,5 @@ beautifulsoup4
 nltk
 openpyxl
 Flask
+pytest
+pytest-cov

@@ -40,11 +40,12 @@ jobs:
         continue-on-error: true
         run: |
           pip list            
-          pip install -r requirements.txt
+          
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-
-      - name: dependency
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: import nltk
         run: |
           python -c "import nltk;nltk.download('corpus')"
           python -c "import nltk;nltk.download('tokenize')"

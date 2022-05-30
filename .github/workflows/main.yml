@@ -18,17 +18,31 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ${{ runner.os }}
+    strategy:
+        matrix:
+          os: [ubuntu-latest]
+
+        fail-fast: false
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       - name: dependency
         run: |
-          pip install -r requirements.txt
+          python -c "import nltk;nltk.download('corpus')"
+          python -c "import nltk;nltk.download('tokenize')"
+          python -c "import nltk;nltk.download('stopwords')"
+          python -c "import nltk;nltk.download('word_tokenize')"
+          python -c "import nltk;nltk.download('punkt')"
       # Runs a single command using the runners shell
       - name: Run a one-line script
         run: |
-          cd tests/
-          python -m pytest
+          python -m pytest . tests --doctest-modules --junitxml=test-results.xml --cov-config=.coveragerc --cov=. --cov-report=html

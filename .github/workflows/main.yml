@@ -31,5 +31,7 @@ jobs:
       - name: Run a one-line script
         run: |
           pwd
+          ls
+          ls ../
           cd test/
           python -m pytest

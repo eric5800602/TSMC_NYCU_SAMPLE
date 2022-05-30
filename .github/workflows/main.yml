@@ -56,3 +56,8 @@ jobs:
       - name: Run a one-line script
         run: |
           python -m pytest . tests --doctest-modules --junitxml=test-results.xml --cov-config=.coveragerc --cov=. --cov-report=html
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: htmlcov

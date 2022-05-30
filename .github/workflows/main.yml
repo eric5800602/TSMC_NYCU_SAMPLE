@@ -27,14 +27,16 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/cache@v3
+      - name: pip-cache
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ matrix.os }}-pip-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            ${{ matrix.os }}-pip-
+            ${{ runner.os }}-pip-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
+
       - name: dependency
         run: |
           python -c "import nltk;nltk.download('corpus')"

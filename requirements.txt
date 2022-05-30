@@ -6,3 +6,4 @@ nltk
 openpyxl
 Flask
 pytest
+pytest-cov

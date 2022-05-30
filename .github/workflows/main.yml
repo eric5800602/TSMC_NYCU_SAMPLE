@@ -27,13 +27,20 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: pip-cache
+      - name: Cache python modules
+        id: cached-pip
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ matrix.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ matrix.os }}-pip-
+      - if: ${{ steps.cached-pip.outputs.cache-hit == 'false' }}
+        name: List the state of pip modules
+        continue-on-error: true
+        run: |
+          pip list            
+          pip install -r requirements.txt
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 

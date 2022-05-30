@@ -19,11 +19,11 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ${{ runner.os }}
+    
     strategy:
-        matrix:
-          os: [ubuntu-latest]
-
-        fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+      fail-fast: false
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:

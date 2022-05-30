@@ -123,17 +123,26 @@ class GoogleCrawler():
 def Hello():
     return "Hellow World"
 
-@app.route('/google_search/<company>')
-def google_search(company):
+@app.route('/google_search/<company>', defaults={'_from':None, '_to':None})
+@app.route('/google_search/<company>/<_from>/<_to>')
+def google_search(company, _from, _to):
+    '''
+    _from : (DD.MM.YYYY)
+    _to : (DD.MM.YYYY)
+    '''
     crawler = GoogleCrawler()
     query = '\"{company}\"'.format(company=company)
-    results = crawler.google_search(query , 'qdr:h' , '1')
+    if _from and _to:
+        timeline = f"cdr:1,cd_min:{_from.replace('.', '/')},cd_max:{_to.replace('.', '/')}"
+    else:
+        timeline = "qdr:h"
+    results = crawler.google_search(query, timeline, '1')
     print(results)
     arr = []
-    with open('{company}.txt'.format(company=company),"w") as f:
+    with open('{company}.txt'.format(company=company), "w") as f:
         for i in results:
             arr.append(i['link'])
-            f.write(i['link']+'\n')
+            f.write(i['link'] + '\n')
         f.close()
     return jsonify(arr)
 

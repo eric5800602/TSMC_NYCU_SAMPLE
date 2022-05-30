@@ -30,8 +30,5 @@ jobs:
       # Runs a single command using the runners shell
       - name: Run a one-line script
         run: |
-          pwd
-          ls
-          ls ../
-          cd test/
+          cd tests/
           python -m pytest
